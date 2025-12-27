@@ -365,8 +365,36 @@ async def on_command_error(ctx, error):
         )
         await ctx.send(embed=embed)
 
-load_dotenv()
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/health':
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'OK')
+        else:
+            self.send_response(404)
+            self.end_headers()
+    
+    def log_message(self, format, *args):
+        pass
+def start_health_server():
+    try:
+        server = HTTPServer(('0.0.0.0', 8000), HealthHandler)
+        print(f"Server started on port 8000")
+        server.serve_forever()
+    except Exception as e:
+        print(f"Server error: {e}")
+health_thread = threading.Thread(target=start_health_server, daemon=True)
+health_thread.start()
+print("Health check ready on port 8000")
+
+
+
+load_dotenv()
 if __name__ == "__main__":
     TOKEN = os.getenv("DISCORD_TOKEN")
     bot.run(TOKEN)
+
