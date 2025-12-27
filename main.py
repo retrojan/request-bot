@@ -369,36 +369,29 @@ import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import time
 
-class HealthHandler(BaseHTTPRequestHandler):
+class ServerHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/health':
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b'OK')
-        else:
-            self.send_response(404)
-            self.end_headers()
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'OK')
     
     def log_message(self, format, *args):
         pass
 
-def start_health_server():
+def start_server():
     try:
-        server = HTTPServer(('0.0.0.0', 8000), HealthHandler)
-        print(f"Health check server started on port 8000")
+        server = HTTPServer(('0.0.0.0', 8000), ServerHandler)
         server.serve_forever()
-    except Exception as e:
-        print(f"Health server error: {e}")
+    except Exception:
+        pass
 
 load_dotenv()
 
 if __name__ == "__main__":
     TOKEN = os.getenv("DISCORD_TOKEN")
-    health_thread = threading.Thread(target=start_health_server, daemon=True)
-    health_thread.start()
+    srv = threading.Thread(target=start_server, daemon=True)
+    srv.start()
     time.sleep(2)
-    print("Health check ready on port 8000")
-    
-    print("Starting...")
     bot.run(TOKEN)
+
 
