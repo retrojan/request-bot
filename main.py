@@ -367,6 +367,7 @@ async def on_command_error(ctx, error):
 
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import time
 
 class HealthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -380,21 +381,24 @@ class HealthHandler(BaseHTTPRequestHandler):
     
     def log_message(self, format, *args):
         pass
+
 def start_health_server():
     try:
         server = HTTPServer(('0.0.0.0', 8000), HealthHandler)
-        print(f"Server started on port 8000")
+        print(f"Health check server started on port 8000")
         server.serve_forever()
     except Exception as e:
-        print(f"Server error: {e}")
-health_thread = threading.Thread(target=start_health_server, daemon=True)
-health_thread.start()
-print("Health check ready on port 8000")
-
-
+        print(f"Health server error: {e}")
 
 load_dotenv()
+
 if __name__ == "__main__":
     TOKEN = os.getenv("DISCORD_TOKEN")
+    health_thread = threading.Thread(target=start_health_server, daemon=True)
+    health_thread.start()
+    time.sleep(2)
+    print("Health check ready on port 8000")
+    
+    print("Starting...")
     bot.run(TOKEN)
 
